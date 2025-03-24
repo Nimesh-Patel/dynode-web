@@ -17,3 +17,22 @@
     color: var(--tab-active-color);
     border-color: var(--purple);
 }
+
+.tab-wrapper {
+    background-color: var(--main-bg);
+    color: var(--main-text);
+    flex-grow: 1;
+}
+.tab-wrapper.dark {
+    background-color: var(--black);
+    color: var(--text);
+}
+
+.mobile-only {
+    display: none;
+}
+@media screen and (max-width: 992px) {
+    .mobile-only {
+        display: block;
+    }
+}

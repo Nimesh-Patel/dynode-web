@@ -6,6 +6,7 @@ import { Tabs } from "./layout/Tabs";
 import { PresetEditor } from "./views/PresetEditor";
 import { SummaryTable } from "./views/SummaryTable";
 import "./App.css";
+import { MobileEditor } from "./views/MobileEditor";
 
 function App() {
     const resizeLeft = useResizable({
@@ -33,6 +34,12 @@ function App() {
                     tabs={[
                         { title: "Epi Curve", content: () => <EpiCurve /> },
                         { title: "Summary", content: () => <SummaryTable /> },
+                        {
+                            title: "Editor",
+                            isDark: true,
+                            mobileOnly: true,
+                            content: () => <MobileEditor />,
+                        },
                     ]}
                 />
             </main>

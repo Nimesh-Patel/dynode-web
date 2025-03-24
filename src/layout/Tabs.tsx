@@ -3,6 +3,8 @@ import "./Tabs.css";
 
 interface TabData {
     title: string;
+    isDark?: boolean;
+    mobileOnly?: boolean;
     content: () => JSX.Element;
 }
 export function Tabs({ tabs }: { tabs: TabData[] }) {
@@ -25,23 +27,29 @@ export function Tabs({ tabs }: { tabs: TabData[] }) {
                 {tabs.map(({ title }, index) => (
                     <div
                         key={title}
-                        className={"tab" + (index === active ? " active" : "")}
+                        className={
+                            "tab" +
+                            (index === active ? " active" : "") +
+                            (tabs[index].mobileOnly ? " mobile-only" : "")
+                        }
                         onClick={() => setActive(index)}
                     >
                         <h2>{title}</h2>
                     </div>
                 ))}
             </div>
-            <div className="p-3 pt-2">
-                {tabContent.map((content, i) => (
-                    <div
-                        key={i}
-                        style={{ display: i === active ? "" : "none" }}
-                    >
-                        {content}
-                    </div>
-                ))}
-            </div>
+
+            {tabContent.map((content, i) => (
+                <div
+                    className={`tab-wrapper ${
+                        tabs[i].isDark ? " dark" : ""
+                    } p-3 pt-2`}
+                    key={i}
+                    style={{ display: i === active ? "" : "none" }}
+                >
+                    {content}
+                </div>
+            ))}
         </>
     );
 }
