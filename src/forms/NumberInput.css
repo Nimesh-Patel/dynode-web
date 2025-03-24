@@ -1,0 +1,21 @@
+.number-input-wrapper {
+    position: relative;
+}
+
+.number-input-save {
+    opacity: 0;
+    font-size: 0.8em;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    top: 0;
+    padding: 3px;
+}
+.number-input-save button {
+    background: var(--black);
+    height: 100%;
+    padding: 2px 8px;
+}
+input:focus + .number-input-save {
+    opacity: 1;
+}

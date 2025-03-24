@@ -1,0 +1,38 @@
+#root {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    text-overflow: hidden;
+}
+.app {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: "hidden";
+}
+
+aside {
+    flex-shrink: 0;
+}
+
+aside {
+    position: relative;
+    background-color: var(--aside-bg);
+    width: 380px;
+    font-size: var(--editor-font-size);
+    height: 100vh;
+    overflow-y: auto;
+}
+aside input {
+    width: 100%;
+}
+
+main {
+    background-color: var(--main-bg);
+    color: var(--main-text);
+    height: 100vh;
+    overflow-y: auto;
+    flex-grow: 1;
+    /* -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale; */
+}

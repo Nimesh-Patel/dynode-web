@@ -1,0 +1,19 @@
+.tabs {
+    display: flex;
+    font-size: 12px;
+    background-color: var(--tab-bg);
+}
+.tabs h2 {
+    font-size: inherit;
+}
+.tab {
+    padding: 10px 20px;
+    background-color: var(--tab-bg);
+    color: var(--tab-color);
+    border-top: 1px solid transparent;
+}
+.tab.active {
+    background-color: var(--tab-active-bg);
+    color: var(--tab-active-color);
+    border-color: var(--purple);
+}

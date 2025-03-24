@@ -1,0 +1,218 @@
+:root {
+    --spacing-unit: 10px;
+    --spacing-0: 0;
+    --spacing-1: calc(var(--spacing-unit) * 1);
+    --spacing-2: calc(var(--spacing-unit) * 2);
+    --spacing-3: calc(var(--spacing-unit) * 3);
+    --spacing-4: calc(var(--spacing-unit) * 4);
+    --spacing-5: calc(var(--spacing-unit) * 5);
+}
+
+/* Margin */
+.m-0 {
+    margin: var(--spacing-0) !important;
+}
+.m-1 {
+    margin: var(--spacing-1) !important;
+}
+.m-2 {
+    margin: var(--spacing-2) !important;
+}
+.m-3 {
+    margin: var(--spacing-3) !important;
+}
+.m-4 {
+    margin: var(--spacing-4) !important;
+}
+.m-5 {
+    margin: var(--spacing-5) !important;
+}
+.m-auto {
+    margin: auto !important;
+}
+
+/* Individual Margins */
+.mt-0 {
+    margin-top: var(--spacing-0) !important;
+}
+.mt-1 {
+    margin-top: var(--spacing-1) !important;
+}
+.mt-2 {
+    margin-top: var(--spacing-2) !important;
+}
+.mt-3 {
+    margin-top: var(--spacing-3) !important;
+}
+.mt-4 {
+    margin-top: var(--spacing-4) !important;
+}
+.mt-5 {
+    margin-top: var(--spacing-5) !important;
+}
+
+.mb-0 {
+    margin-bottom: var(--spacing-0) !important;
+}
+.mb-1 {
+    margin-bottom: var(--spacing-1) !important;
+}
+.mb-2 {
+    margin-bottom: var(--spacing-2) !important;
+}
+.mb-3 {
+    margin-bottom: var(--spacing-3) !important;
+}
+.mb-4 {
+    margin-bottom: var(--spacing-4) !important;
+}
+.mb-5 {
+    margin-bottom: var(--spacing-5) !important;
+}
+
+.ms-0 {
+    margin-left: var(--spacing-0) !important;
+}
+.ms-1 {
+    margin-left: var(--spacing-1) !important;
+}
+.ms-2 {
+    margin-left: var(--spacing-2) !important;
+}
+.ms-3 {
+    margin-left: var(--spacing-3) !important;
+}
+.ms-4 {
+    margin-left: var(--spacing-4) !important;
+}
+.ms-5 {
+    margin-left: var(--spacing-5) !important;
+}
+
+.me-0 {
+    margin-right: var(--spacing-0) !important;
+}
+.me-1 {
+    margin-right: var(--spacing-1) !important;
+}
+.me-2 {
+    margin-right: var(--spacing-2) !important;
+}
+.me-3 {
+    margin-right: var(--spacing-3) !important;
+}
+.me-4 {
+    margin-right: var(--spacing-4) !important;
+}
+.me-5 {
+    margin-right: var(--spacing-5) !important;
+}
+
+/* Padding */
+.p-0 {
+    padding: var(--spacing-0) !important;
+}
+.p-1 {
+    padding: var(--spacing-1) !important;
+}
+.p-2 {
+    padding: var(--spacing-2) !important;
+}
+.p-3 {
+    padding: var(--spacing-3) !important;
+}
+.p-4 {
+    padding: var(--spacing-4) !important;
+}
+.p-5 {
+    padding: var(--spacing-5) !important;
+}
+
+/* Individual Padding */
+.pt-0 {
+    padding-top: var(--spacing-0) !important;
+}
+.pt-1 {
+    padding-top: var(--spacing-1) !important;
+}
+.pt-2 {
+    padding-top: var(--spacing-2) !important;
+}
+.pt-3 {
+    padding-top: var(--spacing-3) !important;
+}
+.pt-4 {
+    padding-top: var(--spacing-4) !important;
+}
+.pt-5 {
+    padding-top: var(--spacing-5) !important;
+}
+
+.pb-0 {
+    padding-bottom: var(--spacing-0) !important;
+}
+.pb-1 {
+    padding-bottom: var(--spacing-1) !important;
+}
+.pb-2 {
+    padding-bottom: var(--spacing-2) !important;
+}
+.pb-3 {
+    padding-bottom: var(--spacing-3) !important;
+}
+.pb-4 {
+    padding-bottom: var(--spacing-4) !important;
+}
+.pb-5 {
+    padding-bottom: var(--spacing-5) !important;
+}
+
+.ps-0 {
+    padding-left: var(--spacing-0) !important;
+}
+.ps-1 {
+    padding-left: var(--spacing-1) !important;
+}
+.ps-2 {
+    padding-left: var(--spacing-2) !important;
+}
+.ps-3 {
+    padding-left: var(--spacing-3) !important;
+}
+.ps-4 {
+    padding-left: var(--spacing-4) !important;
+}
+.ps-5 {
+    padding-left: var(--spacing-5) !important;
+}
+
+.pe-0 {
+    padding-right: var(--spacing-0) !important;
+}
+.pe-1 {
+    padding-right: var(--spacing-1) !important;
+}
+.pe-2 {
+    padding-right: var(--spacing-2) !important;
+}
+.pe-3 {
+    padding-right: var(--spacing-3) !important;
+}
+.pe-4 {
+    padding-right: var(--spacing-4) !important;
+}
+.pe-5 {
+    padding-right: var(--spacing-5) !important;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: var(--spacing-1) var(--spacing-1);
+}
+
+.row-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    gap: var(--spacing-1) var(--spacing-1);
+}

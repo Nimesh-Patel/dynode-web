@@ -1,0 +1,34 @@
+.preset-header {
+    text-transform: uppercase;
+    padding: var(--spacing-1);
+    border-bottom: 1px solid var(--grey);
+}
+
+.preset-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preset-list li {
+    padding: 6px var(--spacing-1);
+    line-height: 1;
+}
+
+.preset-list li:hover,
+.preset-list li.selected {
+    background-color: var(--selected-list-item-bg);
+}
+
+.preset-list li.selected {
+    color: var(--cyan);
+}
+
+.model-run-stats {
+    color: var(--grey);
+    padding: var(--spacing-1);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}

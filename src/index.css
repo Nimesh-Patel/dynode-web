@@ -1,0 +1,144 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+}
+
+:root {
+    --black: rgb(33, 34, 44);
+    --black-lighter: rgb(40 42 54);
+    --grey: rgb(65, 69, 88);
+    --white: rgb(248, 248, 242);
+    --cyan: rgb(128, 255, 234);
+    --green: rgb(138, 255, 128);
+    --orange: rgb(255, 202, 128);
+    --pink: rgb(255, 128, 191);
+    --purple: rgb(149, 128, 255);
+    --red: rgb(255, 149, 128);
+    --yellow: rgb(255, 255, 128);
+
+    --background: var(--black-lighter);
+    --aside-bg: var(--black);
+    --selected-list-item-bg: rgb(49 50 66);
+    --text: white;
+    --details-text-color: rgb(81, 86, 117);
+    --input-bg: rgb(61, 64, 81);
+    --input-color: var(--text);
+    --input-focus-color: rgb(81, 86, 117);
+    --scrollbar-bg: var(--black);
+
+    /* Dark */
+    --main-bg: var(--black-lighter);
+    --main-text: var(--white);
+    --tab-bg: var(--main-bg);
+    --tab-color: var(--text);
+    --tab-active-bg: var(--main-bg);
+    --tab-active-color: var(--text);
+    --default-plot-line-color: var(--white);
+    --summary-table-border-color: rgba(255, 255, 255, 0.2);
+    --summary-table-th-border-color: rgba(255, 255, 255, 0.5);
+    --summary-table-secondary-bg-color: transparent;
+    --summary-table-row-label: var(--grey);
+
+    /* Light */
+    --main-bg: white;
+    --main-text: var(--black);
+    --tab-bg: var(--black-lighter);
+    --tab-color: white;
+    --tab-active-bg: white;
+    --tab-active-color: var(--black);
+    --default-plot-line-color: var(--black);
+    --summary-table-border-color: #e5e7eb;
+    --summary-table-th-border-color: #d1d5dc;
+    --summary-table-secondary-bg-color: #f9fafb;
+    --summary-table-row-label: rgb(117, 129, 141);
+
+    --border-radius: 3px;
+    --font-size: 16px;
+    --editor-font-size: 12px;
+    --main-font: "Gintronic", "Menlo", "Monaco", sans-serif;
+}
+
+body {
+    font-family: var(--main-font);
+    background-color: var(--background);
+    color: var(--text);
+    font-size: var(--font-size);
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+    font-size: inherit;
+    color: var(--input-color);
+    background-color: var(--input-bg);
+    border: none;
+    padding: 8px 10px;
+    border-radius: var(--border-radius);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+input:focus {
+    outline: none;
+    background: var(--input-focus-color);
+}
+
+input:invalid {
+    box-shadow: 0 0 0 1px var(--red);
+}
+.input-error {
+    display: none;
+    color: var(--red);
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+input:invalid + .input-error {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: var(--spacing-2);
+}
+.form-group:last-child {
+    margin-bottom: 0;
+}
+.input-details {
+    font-size: 13px;
+    font-family: "Inter", sans-serif;
+    color: var(--details-text-color);
+    margin-bottom: 5px;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--purple);
+    border-radius: 6px;
+    border: 3px solid var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cyan);
+}
+
+/* Firefox Scrollbar (Experimental) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--purple) var(--scrollbar-bg);
+}

@@ -1,0 +1,39 @@
+.mitigation {
+    border: 1px solid var(--grey);
+    border-radius: var(--border-radius);
+}
+.mitigation.collapsed {
+    opacity: 0.7;
+}
+.mitigation.collapsed:hover {
+    opacity: 1;
+}
+.mitigation-header,
+.mitigation-body {
+    padding: var(--spacing-1);
+}
+.mitigation-header {
+    background-color: var(--black-lighter);
+    position: relative;
+}
+.mitigation-header h4 {
+    font-size: inherit;
+    font-weight: normal;
+    text-transform: uppercase;
+}
+.mitigation-header .status-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--green);
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+}
+.collapsed .mitigation-header .status-icon {
+    color: var(--grey);
+}
+
+.mitigation-body {
+    border-top: 1px solid var(--grey);
+}
