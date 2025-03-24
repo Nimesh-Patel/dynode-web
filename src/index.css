@@ -60,9 +60,8 @@
     --border-radius: 3px;
     --font-size: 16px;
     --editor-font-size: 12px;
-    --main-font: "Gintronic", "Menlo", "Monaco", sans-serif;
+    --main-font: "JetBrains Mono", sans-serif;
 }
-
 body {
     font-family: var(--main-font);
     background-color: var(--background);

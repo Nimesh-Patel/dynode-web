@@ -15,9 +15,20 @@
 .summary-table th:first-child,
 .summary-table td:first-child {
     padding-left: 0;
+    padding-right: 50px;
+}
+.summary-table td:first-child {
+    font-weight: bold;
+    text-align: left;
+}
+.summary-table td {
+    text-align: right;
+}
+.summary-table td.prevented {
+    font-weight: bold;
 }
 .summary-table th {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;
     text-transform: uppercase;
     color: var(--summary-table-row-label);

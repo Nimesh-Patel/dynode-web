@@ -40,7 +40,7 @@ export function SummaryTable() {
             labels[1] === "mitigated";
 
         if (addDiff) {
-            labels.push("Prevented");
+            labels.push("prevented");
         }
 
         const tableData = groups.map((group, rowIdx) => {
@@ -56,14 +56,15 @@ export function SummaryTable() {
 
     return (
         <div className="summary-table-container mb-2">
-            <h3 className="mb-1">Infection Incidence</h3>
+            <h3 className="mb-1">Total Infection Incidence</h3>
             <table className="summary-table">
                 <thead>
                     <tr>
-                        <th>Age Group</th>
+                        <th>Age group</th>
                         {labels.map((label) => (
                             <th key={label}>{label}</th>
                         ))}
+                        <th />
                     </tr>
                 </thead>
                 <tbody>
@@ -71,8 +72,12 @@ export function SummaryTable() {
                         <tr key={i}>
                             <td>{group}</td>
                             {values.map((val, j) => (
-                                <td key={j}>{formatted(val)}</td>
+                                <td className={labels[j]} key={j}>
+                                    {formatted(val)}
+                                </td>
                             ))}
+
+                            <td />
                         </tr>
                     ))}
                 </tbody>

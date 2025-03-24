@@ -6,6 +6,7 @@ import { CategorizedResult, SEIRPlot } from "../plots/SEIRPlot";
 import "./EpiCurve.css";
 import { SEIRModelOutput } from "@wasm/wasm_dynode";
 import { PlotGroup } from "../plots/PlotGroup";
+import { SummaryTable } from "./SummaryTable";
 
 type GroupedResults = Array<Array<CategorizedResult>>;
 
@@ -73,7 +74,7 @@ export function EpiCurve() {
                 />
             </div> */}
 
-            <div className="mb-2" style={{ opacity: isRunning ? "0.5" : "" }}>
+            <div className="mb-4" style={{ opacity: isRunning ? "0.5" : "" }}>
                 <div className="row-2">
                     {grouped && (
                         <PlotGroup
@@ -84,6 +85,8 @@ export function EpiCurve() {
                     )}
                 </div>
             </div>
+
+            <SummaryTable />
         </>
     );
 }
