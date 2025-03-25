@@ -1,0 +1,23 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    uses: "./.github/workflows/build.yaml"
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: cargo test --verbose
+
+  js:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: npm test
