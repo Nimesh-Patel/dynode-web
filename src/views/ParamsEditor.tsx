@@ -20,6 +20,10 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Days</label>
                 <NumberInput
+                    range
+                    min={1}
+                    max={400}
+                    step={10}
                     value={days}
                     numberType="int"
                     onValue={(d) => setDays(d)}
@@ -29,7 +33,7 @@ export function ParamsEditor() {
                 <label>Population size</label>
                 <NumberInput
                     value={params.population}
-                    numberType="float"
+                    numberType="int"
                     onValue={(population) => updateParams({ population })}
                 />
             </FormGroup>
@@ -46,6 +50,10 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>R0</label>
                 <NumberInput
+                    range
+                    min={0.8}
+                    max={2.2}
+                    step={0.1}
                     value={params.r0}
                     numberType="float"
                     onValue={(r0) => updateParams({ r0 })}
@@ -54,6 +62,10 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Latent period</label>
                 <NumberInput
+                    range
+                    min={0.5}
+                    max={2.5}
+                    step={0.1}
                     value={params.latent_period}
                     numberType="float"
                     onValue={(latent_period) => updateParams({ latent_period })}
@@ -62,6 +74,10 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Infectious period</label>
                 <NumberInput
+                    range
+                    min={1}
+                    max={4.5}
+                    step={0.1}
                     value={params.infectious_period}
                     numberType="float"
                     onValue={(infectious_period) =>

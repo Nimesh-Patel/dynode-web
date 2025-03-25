@@ -1,11 +1,13 @@
 import { FormGroup } from "../forms/FormGroup";
 import { SelectInput } from "../forms/SelectInput";
 import { NumberInput } from "../forms/NumberInput";
-import { useMitigation } from "../ModelState";
+import { useDays, useMitigation, useParams } from "../ModelState";
 import { VaccineParams } from "@wasm/wasm_dynode";
 
 export function VaccineEditor() {
+    let [modelParams] = useParams();
     let [params, updateParams] = useMitigation<VaccineParams>("vaccine");
+    let [days] = useDays();
     let dosesOptions = [
         { value: 1, label: "One dose" },
         { value: 2, label: "Two doses" },
@@ -30,6 +32,9 @@ export function VaccineEditor() {
             <FormGroup>
                 <label>Vaccination start</label>
                 <NumberInput
+                    range
+                    min={0}
+                    max={days}
                     value={params.start}
                     onValue={(start) => updateParams({ start })}
                 />
@@ -37,6 +42,10 @@ export function VaccineEditor() {
             <FormGroup>
                 <label>Vaccine doses available</label>
                 <NumberInput
+                    range
+                    min={0}
+                    step={1_000_000}
+                    max={modelParams.population}
                     value={params.doses_available}
                     onValue={(doses_available) =>
                         updateParams({ doses_available })
@@ -46,6 +55,10 @@ export function VaccineEditor() {
             <FormGroup>
                 <label>Vaccine administration rate</label>
                 <NumberInput
+                    range
+                    min={0}
+                    max={30_000_000}
+                    step={1_000_000}
                     value={params.administration_rate}
                     onValue={(administration_rate) =>
                         updateParams({ administration_rate })
@@ -55,15 +68,21 @@ export function VaccineEditor() {
             <FormGroup>
                 <label>Vaccine effectiveness against infection</label>
                 <NumberInput
-                    value={params.ve_s}
-                    onValue={(ve_s) => updateParams({ ve_s })}
+                    range
+                    min={0}
+                    max={100}
+                    value={params.ve_s * 100}
+                    onValue={(ve_s) => updateParams({ ve_s: ve_s / 100 })}
                 />
             </FormGroup>
             <FormGroup>
                 <label>Vaccine effectiveness against onward transmission</label>
                 <NumberInput
-                    value={params.ve_i}
-                    onValue={(ve_i) => updateParams({ ve_i })}
+                    range
+                    min={0}
+                    max={100}
+                    value={params.ve_i * 100}
+                    onValue={(ve_i) => updateParams({ ve_i: ve_i / 100 })}
                 />
             </FormGroup>
         </div>

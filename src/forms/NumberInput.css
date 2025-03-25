@@ -19,3 +19,102 @@
 input:focus + .number-input-save {
     opacity: 1;
 }
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    padding: 0;
+    display: block;
+    height: 12px;
+}
+
+/***** Chrome, Safari, Edge *****/
+input[type="range"]::-webkit-slider-runnable-track {
+    background: var(--grey);
+    height: 3px;
+}
+
+/******** Firefox ********/
+input[type="range"]::-moz-range-track {
+    background: var(--grey);
+    height: 3px;
+}
+
+/***** Thumb Styles *****/
+/***** Chrome, Safari, Edge *****/
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    margin-top: -6px; /* Centers thumb on the track */
+    background-color: var(--purple);
+    height: 14px;
+    width: 14px;
+    border-radius: 14px;
+}
+
+/***** Thumb Styles *****/
+/***** Firefox *****/
+input[type="range"]::-moz-range-thumb {
+    border: none; /*Removes extra border that FF applies*/
+    border-radius: 0; /*Removes default border-radius that FF applies*/
+    background-color: var(--purple);
+    height: 14px;
+    width: 14px;
+    border-radius: 14px;
+}
+
+/***** Focus Styles *****/
+/* Removes default focus */
+input[type="range"]:focus {
+    outline: none;
+    background: none;
+}
+
+/***** Chrome, Safari, Edge *****/
+input[type="range"]:focus::-webkit-slider-thumb {
+    border: 1px solid #fff;
+    outline: 3px solid rgba(122, 97, 212, 0.5);
+    outline-offset: 3px;
+}
+
+/******** Firefox ********/
+input[type="range"]:focus::-moz-range-thumb {
+    border: 1px solid #fff;
+    outline: 3px solid rgba(122, 97, 212, 0.5);
+    outline-offset: 3px;
+}
+
+.range-input-label {
+    height: 12px;
+    position: relative;
+    /** This needs to be 1/2 the width of the range input thumb */
+    padding: 0 7px;
+    color: #8e99cd;
+}
+
+.current-wrapper {
+    position: relative;
+    height: 100%;
+}
+
+.range-input-label span {
+    position: absolute;
+    bottom: 2px;
+}
+
+.range-input-label .current {
+    transform: translateX(-50%);
+}
+
+.range-input-label .min {
+    position: absolute;
+    left: 0;
+}
+
+.range-input-label .max {
+    position: absolute;
+    right: 0;
+}
