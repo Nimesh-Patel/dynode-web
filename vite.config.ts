@@ -13,5 +13,9 @@ export default defineConfig({
         },
     },
     server: { port: 8888 },
+    define: {
+        // Removes in-source testing
+        "import.meta.vitest": "undefined",
+    },
     plugins: [react(), wasm(), topLevelAwait()],
 });

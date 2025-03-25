@@ -230,3 +230,48 @@ export const RangeInput: React.FC<RangeInputProps> = ({
         </div>
     );
 };
+
+// Tests
+if (import.meta.vitest) {
+    const { describe, it, expect } = import.meta.vitest;
+
+    describe("formatNumberToDisplay", () => {
+        it("formats integers with commas", () => {
+            expect(formatNumberToDisplay(1000, "int")).toBe("1,000");
+        });
+
+        it("formats floats with one decimal place", () => {
+            expect(formatNumberToDisplay(1_000_000, "float")).toBe(
+                "1,000,000.0"
+            );
+        });
+    });
+
+    describe("inputToNumber", () => {
+        it("converts comma-formatted integer string to number", () => {
+            expect(inputToNumber("1,000,000", "int")).toBe(1_000_000);
+        });
+
+        it("converts comma-formatted float string to number", () => {
+            expect(inputToNumber("1,000,000.1", "float")).toBe(1_000_000.1);
+        });
+
+        it("returns an error for invalid string input", () => {
+            const result = inputToNumber("hello", "int");
+            expect(result).toBeInstanceOf(Error);
+            expect(result).toHaveProperty(
+                "message",
+                "Invalid characters in input."
+            );
+        });
+
+        it("returns an error for float input to int type", () => {
+            const result = inputToNumber("100.1", "int");
+            expect(result).toBeInstanceOf(Error);
+            expect(result).toHaveProperty(
+                "message",
+                "Integers should not contain a decimal point."
+            );
+        });
+    });
+}
