@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import {
     MitigationParams,
     Parameters,
@@ -5,7 +7,6 @@ import {
     ModelRuns,
     ModelRunType,
     OutputType,
-    SEIRModelOutput,
     OutputItem,
 } from "@wasm/wasm_dynode";
 import {
@@ -19,9 +20,10 @@ import {
 } from "react";
 import { Point } from "./plots/SEIRPlot";
 
+export type LabeledModelRun = [ModelRunType, Point[]];
 type OutputPoints = Record<
     OutputType,
-    { byGroup: Point[][][]; byModelRun: Point[][] }
+    { byGroup: LabeledModelRun[][]; byModelRun: LabeledModelRun[] }
 >;
 
 type ParamsContextType = {
@@ -104,15 +106,12 @@ export const ParamsProvider = ({
             hospital_incidence: { byGroup: [], byModelRun: [] },
         };
 
-        (
-            Object.entries(modelResult.runs) as [
-                ModelRunType,
-                SEIRModelOutput
-            ][]
-        ).forEach(([modelRunType, run], runIndex) => {
+        modelResult.types.forEach((modelRunType, runIndex) => {
+            let run = modelResult.runs[modelRunType];
             (Object.entries(run) as [OutputType, OutputItem[]][]).forEach(
                 ([outputType, output]) => {
-                    points[outputType].byModelRun.push(
+                    points[outputType].byModelRun.push([
+                        modelRunType,
                         output.map((item) => {
                             return {
                                 x: item.time,
@@ -125,9 +124,12 @@ export const ParamsProvider = ({
                                             byGroup[groupIndex] = [];
                                         }
                                         if (!byGroup[groupIndex][runIndex]) {
-                                            byGroup[groupIndex][runIndex] = [];
+                                            byGroup[groupIndex][runIndex] = [
+                                                modelRunType,
+                                                [],
+                                            ];
                                         }
-                                        byGroup[groupIndex][runIndex].push({
+                                        byGroup[groupIndex][runIndex][1].push({
                                             x: item.time,
                                             y: value,
                                             category: modelRunType,
@@ -138,8 +140,8 @@ export const ParamsProvider = ({
                                 ),
                                 category: modelRunType,
                             };
-                        })
-                    );
+                        }),
+                    ]);
                 }
             );
         });
