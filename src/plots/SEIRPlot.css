@@ -1,0 +1,20 @@
+figure {
+    position: relative;
+}
+svg {
+    font-family: var(--plot-font);
+}
+/* Legends */
+[class^="plot-"][class$="-swatch"] {
+    font-family: var(--plot-font);
+    padding-top: 0;
+}
+
+/* g[aria-label="y-axis label"],
+g[aria-label="x-axis label"] {
+    font-size: 12px;
+}
+g[aria-label^="y-axis tick"],
+g[aria-label^="x-axis tick"] {
+    color: var(--grey);
+} */

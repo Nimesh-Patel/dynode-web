@@ -42,6 +42,20 @@ main {
     -moz-osx-font-smoothing: grayscale;
 }
 
+main h3,
+main h4 {
+    font-family: var(--header-font);
+
+    font-weight: 600;
+}
+main h3 {
+    font-size: 22px;
+}
+main h4 {
+    font-weight: 700;
+    font-size: 16px;
+}
+
 @media screen and (max-width: 992px) {
     aside {
         display: none;

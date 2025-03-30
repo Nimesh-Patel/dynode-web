@@ -2,6 +2,7 @@ import * as Plot from "@observablehq/plot";
 import { MitigationType } from "@wasm/wasm_dynode";
 import { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { Point } from "../state/modelRuns";
+import "./SEIRPlot.css";
 
 enum PlotColor {
     Default = "var(--default-plot-line-color)",

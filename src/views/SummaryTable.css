@@ -11,6 +11,7 @@
     white-space: nowrap;
     padding: 10px 12px;
     border-bottom: 1px solid var(--summary-table-border-color);
+    font-family: var(--main-font);
 }
 .summary-table th:first-child,
 .summary-table td:first-child {
@@ -18,8 +19,9 @@
     padding-right: 50px;
 }
 .summary-table td:first-child {
-    font-weight: bold;
+    font-weight: 500;
     text-align: left;
+    font-family: var(--header-font);
 }
 .summary-table td.prevented {
     font-weight: bold;

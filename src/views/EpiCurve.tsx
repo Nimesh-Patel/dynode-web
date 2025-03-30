@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import { SummaryTable } from "./SummaryTable";
 
 export function EpiCurve() {
-    const { dt } = useModelRunData();
+    const { dt, mitigation_types } = useModelRunData();
     let { d1, d2, maxY } = useMemo(() => {
         if (!dt) return { mainData: null, groupedData: null, maxY: null };
         let infectionData = dt.filter(
@@ -44,13 +44,14 @@ export function EpiCurve() {
 
     return (
         <>
-            <h3>Infection Incidence</h3>
+            <h3 className="mb-1">Infection Incidence</h3>
             <div className="mb-4">
-                {d1 && (
+                {d1 && mitigation_types && (
                     <SEIRPlot
                         data={d1}
                         group_by="mitigation_type"
                         yLabel="Infection Incidence"
+                        showLegend={mitigation_types.length > 1}
                     />
                 )}
             </div>

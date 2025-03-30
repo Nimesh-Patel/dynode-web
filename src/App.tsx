@@ -8,6 +8,7 @@ import { SummaryTable } from "./views/SummaryTable";
 import "./App.css";
 import { MobileEditor } from "./views/MobileEditor";
 import { Turbo } from "./layout/Turbo";
+import { Detection } from "./views/Detection";
 
 function App() {
     const resizeLeft = useResizable({
@@ -33,8 +34,15 @@ function App() {
             <main>
                 <Tabs
                     tabs={[
-                        { title: "Epi Curve", content: () => <EpiCurve /> },
+                        { title: "Mitigation", content: () => <EpiCurve /> },
+
+                        {
+                            title: "Detection",
+                            devOnly: true,
+                            content: () => <Detection />,
+                        },
                         { title: "Summary", content: () => <SummaryTable /> },
+
                         {
                             title: "Editor",
                             isDark: true,

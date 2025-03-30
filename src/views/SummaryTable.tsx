@@ -17,7 +17,7 @@ function SummaryTableInner({
     outputType: OutputType;
 }) {
     let [params] = useParams();
-    let groups = params.population_fraction_labels;
+    let groupLabels = params.population_fraction_labels;
     let { dt, mitigation_types } = useModelRunData();
 
     let addPrevented =
@@ -33,7 +33,7 @@ function SummaryTableInner({
         let addPrevented =
             mitigation_types.includes("Unmitigated") &&
             mitigation_types.includes("Mitigated");
-        return computeSummaryRows(dt, outputType, addPrevented);
+        return computeSummaryRows(dt, outputType, addPrevented, groupLabels);
     }, [dt, outputType, mitigation_types]);
 
     if (!summaries || !mitigation_types) return null;
@@ -51,7 +51,7 @@ function SummaryTableInner({
                         {addPrevented && (
                             <th
                                 style={{
-                                    color: "var(--black)",
+                                    color: "var(--dark-purple)",
                                     fontWeight: "bold",
                                 }}
                             >
@@ -65,7 +65,7 @@ function SummaryTableInner({
                     {summaries.map((summary) => {
                         return (
                             <tr key={summary.group}>
-                                <td>{groups[summary.group]}</td>
+                                <td>{summary.group}</td>
                                 {mitigation_types.map((label) => {
                                     let sum = summary[label];
                                     return (
@@ -75,7 +75,10 @@ function SummaryTableInner({
                                 {summary.prevented !== undefined && (
                                     <td>
                                         {summary.prevent_pct && (
-                                            <Underbar pct={summary.prevent_pct}>
+                                            <Underbar
+                                                pct={summary.prevent_pct}
+                                                color="var(--dark-purple)"
+                                            >
                                                 {formatted(summary.prevented)}
                                             </Underbar>
                                         )}
@@ -95,7 +98,7 @@ export function SummaryTable() {
     let { dt } = useModelRunData();
     if (!dt) return null;
     return (
-        <div>
+        <div className="summaries">
             <SummaryTableInner
                 title="Infection Incidence"
                 outputType="InfectionIncidence"
@@ -109,7 +112,7 @@ export function SummaryTable() {
 }
 
 type SummaryRow = {
-    group: number;
+    group: string;
     total: number;
     prevented?: number;
     prevent_pct?: number;
@@ -118,18 +121,34 @@ type SummaryRow = {
 function computeSummaryRows(
     dt: ColumnTable,
     outputType: OutputType,
-    addPrevented: boolean
+    addPrevented: boolean,
+    groupLabels: string[]
 ): SummaryRow[] | null {
-    let result: SummaryRow[] = dt
-        .params({ outputType })
+    let grouped = dt
+        .params({ outputType, groupLabels })
         // @ts-expect-error d and & are untyped
         .filter((d, $) => d.output_type === $.outputType)
         .groupby("group", "mitigation_type")
         .rollup({
             value: op.sum("value"),
         })
-        // @ts-expect-error d is untyped
-        .derive({ value: (d) => Math.round(d.value / 1000) * 1000 })
+
+        .derive({
+            // @ts-expect-error d is untyped
+            value: (d) => Math.round(d.value / 1000) * 1000,
+            // @ts-expect-error d is untyped
+            group: (d, $) => $.groupLabels[d.group],
+        });
+
+    let totals = grouped
+        .groupby("mitigation_type")
+        .rollup({
+            value: op.sum("value"),
+        })
+        .derive({ group: () => "All" });
+
+    let result: SummaryRow[] = totals
+        .concat(grouped)
         .groupby("group")
         .pivot("mitigation_type", { value: op.sum("value") })
         .objects() as SummaryRow[];
@@ -148,9 +167,11 @@ function computeSummaryRows(
 
 function Underbar({
     pct,
+    color,
     children,
 }: {
     pct?: number;
+    color?: string;
     children: React.ReactNode;
 }) {
     if (pct === undefined) return children;
@@ -162,6 +183,7 @@ function Underbar({
                     className="underbar-bar"
                     style={{
                         width: `${pct * 100}%`,
+                        backgroundColor: color || undefined,
                     }}
                 />
             </div>
