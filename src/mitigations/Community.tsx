@@ -32,6 +32,9 @@ export function CommunityEditor() {
                 >
                     <MatrixInput
                         value={contact_multiplier}
+                        step={0.1}
+                        min={0.5}
+                        max={1.5}
                         symmetric={params.population_fraction_labels}
                         onChange={(newVal) => {
                             updateParams({ contact_multiplier: newVal });

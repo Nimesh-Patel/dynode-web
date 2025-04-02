@@ -104,11 +104,17 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         if (e.key === "Enter") {
             inputRef.current?.blur();
         } else if (e.key === "ArrowUp") {
-            e.preventDefault(); // prevent cursor from moving in the input
-            onValue(addFloat(value, step || 1.0));
+            e.preventDefault();
+            let newVal = addFloat(value, step || 1.0);
+            if (max === undefined || newVal <= max) {
+                onValue(newVal);
+            }
         } else if (e.key === "ArrowDown") {
             e.preventDefault();
-            onValue(addFloat(value, -(step || 1.0)));
+            let newVal = addFloat(value, -(step || 1.0));
+            if (min === undefined || newVal >= min) {
+                onValue(newVal);
+            }
         }
     };
 

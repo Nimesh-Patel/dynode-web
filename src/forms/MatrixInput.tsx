@@ -11,6 +11,12 @@ export type MatrixInputProps = {
     rows?: string[];
     /** Renders each combo of col/rows once */
     symmetric?: string[];
+    /** Step for the matrix inputs */
+    step?: number;
+    /** Min for the matrix inputs */
+    min?: number;
+    /** Max for the matrix inputs */
+    max?: number;
 };
 
 export function MatrixInput({
@@ -19,6 +25,9 @@ export function MatrixInput({
     cols,
     rows,
     symmetric,
+    step,
+    min,
+    max,
 }: MatrixInputProps) {
     const isSymmetric = symmetric !== undefined;
 
@@ -65,14 +74,14 @@ export function MatrixInput({
                                 return (
                                     <td key={j}>
                                         <NumberInput
-                                            min={0.5}
-                                            max={1.5}
+                                            min={min}
+                                            max={max}
                                             numberType="float"
                                             value={value[m.index(i, j)]}
                                             onValue={handleChange(i, j)}
                                             showMinMaxLabels={false}
                                             showSaveButton={false}
-                                            step={0.1}
+                                            step={step}
                                         />
                                     </td>
                                 );

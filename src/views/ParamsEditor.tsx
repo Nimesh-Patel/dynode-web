@@ -32,7 +32,9 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Population size</label>
                 <NumberInput
+                    min={0}
                     value={params.population}
+                    step={1_000_000}
                     numberType="int"
                     onValue={(population) => updateParams({ population })}
                 />
@@ -41,6 +43,8 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Initial infections</label>
                 <NumberInput
+                    min={0}
+                    step={100}
                     value={params.initial_infections}
                     onValue={(initial_infections) =>
                         updateParams({ initial_infections })
