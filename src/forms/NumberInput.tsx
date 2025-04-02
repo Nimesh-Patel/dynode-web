@@ -34,9 +34,11 @@ interface NumberInputProps {
     range?: boolean;
     min?: number;
     max?: number;
+    showMinMaxLabels?: boolean;
     step?: number;
     value: number;
     onValue: (val: number) => void;
+    showSaveButton?: boolean;
 }
 
 export const NumberInput: React.FC<NumberInputProps> = ({
@@ -45,8 +47,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
     range,
     min,
     max,
+    showMinMaxLabels = true,
     step,
     numberType = "float",
+    showSaveButton = true,
     ...otherProps
 }) => {
     const [parsedInternal, setParsedInternal] = useState<number | null>(null);
@@ -96,6 +100,18 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         );
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            inputRef.current?.blur();
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault(); // prevent cursor from moving in the input
+            onValue(addFloat(value, step || 1.0));
+        } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            onValue(addFloat(value, -(step || 1.0)));
+        }
+    };
+
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -113,6 +129,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                 onValue,
                 min,
                 max,
+                showMinMaxLabels,
                 step,
             };
         }
@@ -128,14 +145,17 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                         ref={inputRef}
                         value={formattedVal}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                         onBlur={handleBlur}
                         {...otherProps}
                     />
-                    <div className="number-input-save">
-                        <button onClick={(e) => e.preventDefault()}>
-                            Save
-                        </button>
-                    </div>
+                    {showSaveButton && (
+                        <div className="number-input-save">
+                            <button onClick={(e) => e.preventDefault()}>
+                                Save
+                            </button>
+                        </div>
+                    )}
                     <span className="input-error">{errorMessage}</span>
                 </>
             )}
@@ -161,6 +181,7 @@ interface RangeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     min: number;
     max: number;
     step?: number;
+    showMinMaxLabels: boolean;
 }
 
 export const RangeInput: React.FC<RangeInputProps> = ({
@@ -170,6 +191,7 @@ export const RangeInput: React.FC<RangeInputProps> = ({
     max,
     step,
     onValue,
+    showMinMaxLabels,
     ...otherProps
 }) => {
     let value_pct = ((value - min) / (max - min)) * 100;
@@ -185,15 +207,19 @@ export const RangeInput: React.FC<RangeInputProps> = ({
     return (
         <div className="range-input">
             <div className="range-input-label">
-                <span
-                    style={{
-                        display:
-                            value_pct < LABEL_COLLISION_THRESHOLD ? "none" : "",
-                    }}
-                    className="min"
-                >
-                    {formatNumberShort(min)}
-                </span>
+                {showMinMaxLabels && (
+                    <span
+                        style={{
+                            display:
+                                value_pct < LABEL_COLLISION_THRESHOLD
+                                    ? "none"
+                                    : "",
+                        }}
+                        className="min"
+                    >
+                        {formatNumberShort(min)}
+                    </span>
+                )}
                 <div className="current-wrapper">
                     <span
                         style={{
@@ -205,17 +231,19 @@ export const RangeInput: React.FC<RangeInputProps> = ({
                         {value.toLocaleString("en-US")}
                     </span>
                 </div>
-                <span
-                    style={{
-                        display:
-                            value_pct > 100 - LABEL_COLLISION_THRESHOLD
-                                ? "none"
-                                : "",
-                    }}
-                    className="max"
-                >
-                    {formatNumberShort(max)}
-                </span>
+                {showMinMaxLabels && (
+                    <span
+                        style={{
+                            display:
+                                value_pct > 100 - LABEL_COLLISION_THRESHOLD
+                                    ? "none"
+                                    : "",
+                        }}
+                        className="max"
+                    >
+                        {formatNumberShort(max)}
+                    </span>
+                )}
             </div>
             <input
                 ref={ref}
@@ -230,6 +258,10 @@ export const RangeInput: React.FC<RangeInputProps> = ({
         </div>
     );
 };
+
+function addFloat(a: number, b: number): number {
+    return Math.round((a + b) * 10000) / 10000;
+}
 
 // Tests
 if (import.meta.vitest) {

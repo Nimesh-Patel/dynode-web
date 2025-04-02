@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import {
-    MitigationParams,
+    MitigationParamsExport as MitigationParams,
     Parameters,
     SEIRModelUnified,
 } from "@wasm/wasm_dynode";
