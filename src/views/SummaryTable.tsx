@@ -111,10 +111,7 @@ export function SummaryTable() {
                 title="Hospitalizations"
                 outputType="HospitalIncidence"
             />
-            <SummaryTableInner
-                title="Deaths"
-                outputType="DeathIncidence"
-            />
+            <SummaryTableInner title="Deaths" outputType="DeathIncidence" />
         </div>
     );
 }

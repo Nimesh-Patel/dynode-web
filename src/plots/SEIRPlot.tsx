@@ -15,11 +15,11 @@ export type Annotation = {
     x: number;
 };
 
-function getColors(group_by: keyof Point): {
+function getColors(groupBy: keyof Point): {
     domain: string[];
     range: string[];
 } | null {
-    switch (group_by) {
+    switch (groupBy) {
         case "mitigation_type":
             return {
                 domain: ["Unmitigated", "Mitigated"] as MitigationType[],
@@ -47,7 +47,7 @@ function computeTickInfo(
 
 export interface SEIRPlotProps {
     data: Point[];
-    group_by: keyof Point;
+    groupBy: keyof Point;
     yDomain?: [number, number];
     showLegend?: boolean;
     yTicks?: number;
@@ -61,7 +61,7 @@ export function SEIRPlot({
     yDomain,
     showLegend = true,
     data,
-    group_by,
+    groupBy,
     yLabel: yLabelBase,
     maxY: userMaxY,
     annotations = [],
@@ -83,7 +83,7 @@ export function SEIRPlot({
     useEffect(() => {
         if (!data.length || !plotRef.current) return;
 
-        let colors = getColors(group_by);
+        let colors = getColors(groupBy);
 
         let maxY = userMaxY || yDomain?.[1];
         if (!maxY) {
@@ -113,7 +113,7 @@ export function SEIRPlot({
                 Plot.line(data, {
                     x: "x",
                     y: "y",
-                    stroke: group_by,
+                    stroke: groupBy,
                 }),
                 Plot.ruleX(annotations, {
                     x: "x",

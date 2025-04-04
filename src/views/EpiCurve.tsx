@@ -1,10 +1,9 @@
-import { Annotation, SEIRPlot } from "../plots/SEIRPlot";
+import { Annotation } from "../plots/SEIRPlot";
 // import { SelectInput } from "../forms/SelectInput";
 
 import "./EpiCurve.css";
-import { Point, useModelRunData } from "../state/modelRuns";
-import { op } from "arquero";
-import { PlotGroup } from "../plots/PlotGroup";
+import { useModelRunData } from "../state/modelRuns";
+import { ColumnTable, op } from "arquero";
 import { useMemo } from "react";
 import { SummaryTable } from "./SummaryTable";
 import { useParams } from "../ModelState";
@@ -13,40 +12,65 @@ import {
     CommunityMitigationParamsExport,
     VaccineParams,
 } from "@wasm/wasm_dynode";
+import { OutputPlot } from "../plots/OutputPlot";
+
+function getInfectionData(dt: ColumnTable): ColumnTable {
+    return dt
+        .filter((d) => d.output_type === "InfectionIncidence")
+        .groupby("day", "mitigation_type")
+        .rollup({ sum: op.sum("value") })
+        .select({
+            day: "x",
+            sum: "y",
+            mitigation_type: "mitigation_type",
+        });
+}
+
+function getAgeGroupInfectionData(dt: ColumnTable): ColumnTable {
+    return dt
+        .filter((d) => d.output_type === "InfectionIncidence")
+        .derive({
+            group: (d, $) => $.params.population_fraction_labels[d.group],
+        })
+        .select({
+            day: "x",
+            value: "y",
+            mitigation_type: "mitigation_type",
+            group: "group",
+        });
+}
+
+function getOutputs(dt: ColumnTable): ColumnTable {
+    return dt
+        .filter(
+            (d) =>
+                d.output_type === "HospitalIncidence" ||
+                d.output_type === "DeathIncidence"
+        )
+        .groupby("day", "mitigation_type", "output_type")
+        .rollup({ sum: op.sum("value") })
+        .select({
+            day: "x",
+            sum: "y",
+            mitigation_type: "mitigation_type",
+            output_type: "output_type",
+        })
+        .derive({
+            output_type: (d) => {
+                if (d.output_type === "HospitalIncidence") {
+                    return "Hospitalizations";
+                } else if (d.output_type === "DeathIncidence") {
+                    return "Deaths";
+                }
+            },
+        });
+}
 
 export function EpiCurve() {
     let [params] = useParams();
-    const { dt, mitigation_types } = useModelRunData();
-    let { d1, d2, maxY, annotations } = useMemo(() => {
-        if (!dt) return { mainData: null, groupedData: null, maxY: null };
-        let infectionData = dt.filter(
-            (d) => d.output_type === "InfectionIncidence"
-        );
-        let maxY = dt
-            .filter((d) => d.output_type === "InfectionIncidence")
-            .rollup({ max: op.max("value") })
-            .get("max");
-        let _d1 = infectionData
-            .groupby("day", "mitigation_type")
-            .rollup({ sum: op.sum("value") })
-            .select({
-                day: "x",
-                sum: "y",
-                mitigation_type: "mitigation_type",
-            })
-            .objects();
-        let _d2 = infectionData
-            .groupby("group")
-            .select({
-                day: "x",
-                value: "y",
-                mitigation_type: "mitigation_type",
-            })
-            .objects({ grouped: true }) as unknown;
-
-        let d1 = _d1 as Point[];
-        let d2 = _d2 as Map<number, Point[]>;
-
+    let { mitigation_types } = useModelRunData();
+    mitigation_types = mitigation_types || [];
+    let annotations = useMemo(() => {
         let annotations: Array<Annotation> = entries(params.mitigations)
             .map(([label, value]) => {
                 if (!value.enabled) return;
@@ -76,38 +100,45 @@ export function EpiCurve() {
             })
             .filter((x) => x !== undefined)
             .flat();
-        return { d1, d2, maxY, annotations };
-    }, [dt, params]);
+        return annotations;
+    }, [params]);
 
     return (
         <>
-            <h3 className="mb-1">Infection Incidence</h3>
-            <div className="mb-4">
-                {d1 && mitigation_types && (
-                    <SEIRPlot
-                        data={d1}
-                        group_by="mitigation_type"
-                        yLabel="Infection Incidence"
-                        annotations={annotations}
-                        showLegend={mitigation_types.length > 1}
-                    />
-                )}
+            <h3 className="mb-1">All Groups</h3>
+            <h4 className="mb-1">Infection Incidence</h4>
+            <div className="mb-2">
+                <OutputPlot
+                    withDt={getInfectionData}
+                    groupBy="mitigation_type"
+                    yLabel="Infection Incidence"
+                    annotations={annotations}
+                    showLegend={mitigation_types.length > 1}
+                />
             </div>
 
-            <h3 className="mb-1">By Age Group</h3>
             <div className="mb-4">
-                <div className="row-2">
-                    {d2 && (
-                        <PlotGroup
-                            maxY={maxY}
-                            groups={d2}
-                            group_by="mitigation_type"
-                            yTicks={5}
-                            showLegend={false}
-                            yLabel={"Infection Incidence"}
-                        />
-                    )}
-                </div>
+                <OutputPlot
+                    withDt={getOutputs}
+                    facetBy="output_type"
+                    groupBy="mitigation_type"
+                    yLabel="Incidence"
+                    yTicks={5}
+                    showLegend={false}
+                />
+            </div>
+
+            <h3 className="mb-1">Infection Incidence by Age Group</h3>
+            <div className="mb-4">
+                <OutputPlot
+                    withDt={getAgeGroupInfectionData}
+                    facetBy="group"
+                    groupBy="mitigation_type"
+                    singleYAxis={true}
+                    yTicks={5}
+                    yLabel="Infection Incidence"
+                    showLegend={false}
+                />
             </div>
 
             <SummaryTable />

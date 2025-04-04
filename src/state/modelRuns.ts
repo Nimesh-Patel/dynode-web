@@ -40,19 +40,23 @@ export function buildModelRunTable(exported: ModelOutputExport): ModelRunTable {
         mitigation_types: exported.mitigation_types,
         output_types: exported.output_types,
     };
-    entries(exported.output).forEach(([mitigation_type, output]) => {
-        entries(output).forEach(([output_type, items]) => {
-            items.forEach((item) => {
-                item.grouped_values.forEach((val, i) => {
-                    table.rows.day.push(item.time);
-                    table.rows.value.push(val);
-                    table.rows.group.push(i);
-                    table.rows.output_type.push(output_type);
-                    table.rows.mitigation_type.push(mitigation_type);
+    entries(exported.output)
+        .sort()
+        .forEach(([mitigation_type, output]) => {
+            entries(output)
+                .sort()
+                .forEach(([output_type, items]) => {
+                    items.forEach((item) => {
+                        item.grouped_values.forEach((val, i) => {
+                            table.rows.day.push(item.time);
+                            table.rows.value.push(val);
+                            table.rows.group.push(i);
+                            table.rows.output_type.push(output_type);
+                            table.rows.mitigation_type.push(mitigation_type);
+                        });
+                    });
                 });
-            });
         });
-    });
     return table;
 }
 
