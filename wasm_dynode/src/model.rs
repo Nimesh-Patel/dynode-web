@@ -3,9 +3,58 @@ use nalgebra::{Const, Matrix, MatrixView, SVector, Storage, StorageMut};
 use ode_solvers::{Dopri5, System};
 use paste::paste;
 
+pub struct AVE<const N: usize> {
+    pub rr_i: SVector<f64, N>,
+    pub rr_p_hosp: SVector<f64, N>,
+    pub rr_p_death: SVector<f64, N>,
+}
+
+impl<const N: usize> AVE<N> {
+    fn new(params: &Parameters<N>) -> Self {
+        let av_params = &params.mitigations.antivirals;
+        let ones = SVector::<f64, N>::from_element(1.0);
+
+        // risk ratio (proportional reduction) against transmission
+        let rr_i = if av_params.enabled {
+            ones - params.fraction_symptomatic
+                * av_params.fraction_seek_care
+                * av_params.fraction_diagnosed_prescribed_outpatient
+                * av_params.fraction_adhere
+                * av_params.ave_i
+        } else {
+            ones
+        };
+
+        // risk ratio against hospitalization given infection
+        let rr_p_hosp = if av_params.enabled {
+            ones - params.fraction_symptomatic
+                * av_params.fraction_seek_care
+                * av_params.fraction_diagnosed_prescribed_outpatient
+                * av_params.fraction_adhere
+                * av_params.ave_p
+        } else {
+            ones
+        };
+
+        // risk ratio against death given infection
+        let rr_p_death = if av_params.enabled {
+            (1.0 - av_params.fraction_diagnosed_prescribed_inpatient * av_params.ave_p) * rr_p_hosp
+        } else {
+            ones
+        };
+
+        Self {
+            rr_i,
+            rr_p_hosp,
+            rr_p_death,
+        }
+    }
+}
+
 pub struct SEIRModel<const N: usize> {
     pub(crate) parameters: Parameters<N>,
     contact_matrix_normalization: f64,
+    ave: AVE<N>,
 }
 
 macro_rules! make_state {
@@ -72,9 +121,11 @@ impl<const N: usize> SEIRModel<N> {
     pub fn new(parameters: Parameters<N>) -> Self {
         let contact_matrix = parameters.contact_matrix;
         let (eigenvalue, _) = get_dominant_eigendata(&contact_matrix);
+        let ave = AVE::new(&parameters);
         SEIRModel {
             parameters,
             contact_matrix_normalization: eigenvalue,
+            ave,
         }
     }
 }
@@ -150,6 +201,10 @@ impl<const N: usize> System<f64, State<N>> for &SEIRModel<N> {
         let params = &self.parameters;
         let community_params = &params.mitigations.community;
 
+        let ve_s = self.parameters.mitigations.vaccine.ve_s;
+        let ve_i = self.parameters.mitigations.vaccine.ve_i;
+        let ve_p = self.parameters.mitigations.vaccine.ve_p;
+
         // Community mitigation
         let contact_matrix = if community_params.enabled
             && x >= community_params.start
@@ -165,7 +220,10 @@ impl<const N: usize> System<f64, State<N>> for &SEIRModel<N> {
 
         // Transmission
         let beta = self.parameters.r0 / self.parameters.infectious_period;
-        let i_effective = i + (1.0 - self.parameters.mitigations.vaccine.ve_i) * iv;
+        let ones = SVector::<f64, N>::from_element(1.0);
+        let i_effective = i.component_mul(&self.ave.rr_i)
+            + (iv * (1.0 - ve_i)).component_mul(&(ones + (1.0 - ve_p) * (ones - self.ave.rr_i)));
+
         let infection_rate = (beta / self.parameters.population)
             * (contact_matrix * i_effective).component_div(&self.parameters.population_fractions);
 
@@ -173,8 +231,7 @@ impl<const N: usize> System<f64, State<N>> for &SEIRModel<N> {
         let de_to_i = e / self.parameters.latent_period;
         let di_to_r = i / self.parameters.infectious_period;
 
-        let dsv_to_ev =
-            sv.component_mul(&((1.0 - self.parameters.mitigations.vaccine.ve_s) * infection_rate));
+        let dsv_to_ev = sv.component_mul(&((1.0 - ve_s) * infection_rate));
         let dev_to_iv = ev / self.parameters.latent_period;
         let div_to_rv = iv / self.parameters.infectious_period;
 
@@ -193,18 +250,25 @@ impl<const N: usize> System<f64, State<N>> for &SEIRModel<N> {
         } else {
             0.0
         };
+
         let ds_to_sv = s
             .component_div(&(s + e + i + r))
             .component_mul(&self.parameters.population_fractions)
             * administration_rate;
 
-        // Severity
-        let dto_pre_h = (de_to_i + (1.0 - self.parameters.mitigations.vaccine.ve_p) * dev_to_iv)
-            .component_mul(&self.parameters.fraction_hospitalized);
+        // Hospitalizations
+        let dat_risk = de_to_i + dev_to_iv * (1.0 - ve_p);
+
+        let dto_pre_h = dat_risk
+            .component_mul(&self.parameters.fraction_hospitalized)
+            .component_mul(&self.ave.rr_p_hosp);
         let dpre_h_to_h_cum = pre_h / self.parameters.hospitalization_delay;
 
-        let dto_pre_d = (de_to_i + (1.0 - self.parameters.mitigations.vaccine.ve_p) * dev_to_iv)
-            .component_mul(&self.parameters.fraction_dead);
+        // Deaths
+        let dto_pre_d = dat_risk
+            .component_mul(&self.parameters.fraction_dead)
+            .component_mul(&self.ave.rr_p_death);
+
         let dpre_d_to_d_cum = pre_d / self.parameters.death_delay;
 
         // Collect derivatives
@@ -247,7 +311,8 @@ mod test {
 
     use super::SEIRModel;
     use crate::{
-        DynodeModel, MitigationParams, OutputType, Parameters, model::get_dominant_eigendata,
+        AntiviralsParams, DynodeModel, MitigationParams, OutputType, Parameters,
+        model::get_dominant_eigendata,
     };
 
     #[test]
@@ -351,7 +416,22 @@ mod test {
 
     #[test]
     fn test_vaccine() {
-        let mut parameters = Parameters::default();
+        let mut parameters = Parameters {
+            population: 330_000_000.0,
+            population_fractions: Vector1::new(1.0),
+            population_fraction_labels: Vector1::new("All".to_string()),
+            contact_matrix: Matrix1::new(1.0),
+            initial_infections: 1_000.0,
+            r0: 2.0,
+            latent_period: 1.0,
+            infectious_period: 3.0,
+            mitigations: MitigationParams::default(),
+            fraction_symptomatic: Vector1::new(0.5),
+            fraction_hospitalized: Vector1::new(0.1),
+            hospitalization_delay: 1.0,
+            fraction_dead: Vector1::new(0.01),
+            death_delay: 1.0,
+        };
         parameters.mitigations.vaccine.enabled = true;
         let model = SEIRModel::new(parameters);
         let output = model.integrate(200);
@@ -364,6 +444,47 @@ mod test {
         let attack_rate = total_incidence / model.parameters.population;
 
         println!("{}", attack_rate)
+    }
+
+    #[test]
+    fn test_antiviral() {
+        let mut params = Parameters {
+            population: 330_000_000.0,
+            population_fractions: Vector1::new(1.0),
+            population_fraction_labels: Vector1::new("All".to_string()),
+            contact_matrix: Matrix1::new(1.0),
+            initial_infections: 1_000.0,
+            r0: 2.0,
+            latent_period: 1.0,
+            infectious_period: 3.0,
+            mitigations: MitigationParams::default(),
+            fraction_symptomatic: Vector1::new(0.5),
+            fraction_hospitalized: Vector1::new(0.1),
+            hospitalization_delay: 1.0,
+            fraction_dead: Vector1::new(0.01),
+            death_delay: 1.0,
+        };
+        params.mitigations.antivirals = AntiviralsParams {
+            enabled: true,
+            editable: true,
+            ave_i: 0.5,
+            ave_p: 0.0,
+            fraction_adhere: 0.5,
+            fraction_diagnosed_prescribed_inpatient: 0.5,
+            fraction_diagnosed_prescribed_outpatient: 0.5,
+            fraction_seek_care: 0.5,
+        };
+
+        let population = params.population;
+        let output = SEIRModel::new(params).integrate(200);
+        let total_incidence: f64 = output
+            .get_output(&OutputType::InfectionIncidence)
+            .iter()
+            .map(|x| x.grouped_values.iter().sum::<f64>())
+            .sum();
+        let attack_rate = total_incidence / population;
+
+        assert!((attack_rate - 0.77889514).abs() < 1e-5);
     }
 
     #[test]
