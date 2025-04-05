@@ -233,9 +233,7 @@ export class Tooltip<P> {
     }
 
     onPointerMove(event: PointerEvent) {
-        if (event.pointerType !== "touch") {
-            this.render(event);
-        }
+        this.render(event);
     }
 
     onPointerLeave() {

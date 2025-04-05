@@ -72,6 +72,8 @@ body {
     background-color: var(--background);
     color: var(--text);
     font-size: var(--font-size);
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 input,
