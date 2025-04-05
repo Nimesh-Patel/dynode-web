@@ -18,3 +18,11 @@ g[aria-label^="y-axis tick"],
 g[aria-label^="x-axis tick"] {
     color: var(--grey);
 } */
+
+.plot-tooltip-content {
+    font-size: 12px;
+}
+.plot-tooltip-content table {
+    text-align: left;
+    width: 100%;
+}

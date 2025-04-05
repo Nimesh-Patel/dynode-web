@@ -1,8 +1,10 @@
 import * as Plot from "@observablehq/plot";
 import { MitigationType } from "@wasm/wasm_dynode";
 import { useRef, useState, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { Point } from "../state/modelRuns";
 import "./SEIRPlot.css";
+import { Tooltip } from "./Tooltip";
 
 enum PlotColor {
     Default = "var(--default-plot-line-color)",
@@ -70,6 +72,8 @@ export function SEIRPlot({
     const [containerSize, setContainerSize] = useState<[number, number]>([
         800, 500,
     ]);
+    const [tooltip, setTooltip] = useState<Tooltip<Point> | null>(null);
+    const [tooltipData, setTooltipData] = useState<Point[] | null>(null);
 
     // TODO<ryl8@cdc.gov> clean this up and make it more generic
     if (annotations.length) {
@@ -92,6 +96,7 @@ export function SEIRPlot({
 
         const [yLabel, tickFormat] = computeTickInfo(yLabelBase, maxY);
         const plot = Plot.plot({
+            figure: true,
             x: { label: "Days" },
             y: {
                 label: yLabel,
@@ -144,7 +149,30 @@ export function SEIRPlot({
         plotRef.current.innerHTML = "";
         plotRef.current.appendChild(plot);
 
-        return () => plot.remove();
+        let tooltip: Tooltip<Point> | null = null;
+
+        if (plotRef.current) {
+            let figure = plotRef.current.querySelector("figure");
+            if (!figure) {
+                console.warn("No figure element found in plot");
+            } else {
+                tooltip = new Tooltip({
+                    containerEl: figure,
+                    plot,
+                    points: data,
+                    xProperty: "x",
+                    renderContent: (_, points) => {
+                        setTooltipData(points || null);
+                    },
+                });
+                setTooltip(tooltip);
+            }
+        }
+
+        return () => {
+            plot.remove();
+            tooltip?.cleanup();
+        };
     }, [data, containerSize, yLabelBase, yDomain, showLegend, yTicks]);
 
     useLayoutEffect(() => {
@@ -175,5 +203,51 @@ export function SEIRPlot({
         };
     }, []);
 
-    return <div ref={plotRef} />;
+    return (
+        <>
+            <div ref={plotRef} />
+            {tooltip?.tooltipEl
+                ? createPortal(
+                      <TooltipContent data={tooltipData} groupBy={groupBy} />,
+                      tooltip.tooltipEl
+                  )
+                : null}
+        </>
+    );
+}
+
+function TooltipContent({
+    data,
+    groupBy,
+}: {
+    data: Point[] | null;
+    groupBy: keyof Point;
+}) {
+    if (!data) return null;
+    let day = data[0].x;
+    return (
+        <div className="plot-tooltip-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th colSpan={2}>Day {day}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map((d, i) => (
+                        <tr key={i}>
+                            <td>{d[groupBy]}</td>
+                            <td style={{ textAlign: "right" }}>
+                                <strong>{formatTooltipNumber(d.y)}</strong>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function formatTooltipNumber(num: number): string {
+    return (Math.round(num / 1000) * 1000).toLocaleString("en-US");
 }
