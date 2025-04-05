@@ -187,15 +187,15 @@ export class Tooltip<P> {
         this.node.removeEventListener("pointerleave", this.onPointerLeave);
     }
 
-    onPointerEnter() {
+    show() {
         this.tooltipEl.style.display = "";
         this.focusLine.style("display", "");
         this.trackEnter = true;
     }
 
-    onPointerMove(event: PointerEvent) {
+    render(event: PointerEvent) {
         if (!this.trackEnter) {
-            this.onPointerEnter();
+            this.show();
         }
         const [x] = pointer(event);
         const index = this.bisector.center(
@@ -223,6 +223,19 @@ export class Tooltip<P> {
             "transform",
             `translate(${this.xScale(nearestX)},0)`
         );
+    }
+
+    onPointerEnter(event: PointerEvent) {
+        this.show();
+        if (event.pointerType === "touch") {
+            this.render(event);
+        }
+    }
+
+    onPointerMove(event: PointerEvent) {
+        if (event.pointerType !== "touch") {
+            this.render(event);
+        }
     }
 
     onPointerLeave() {
