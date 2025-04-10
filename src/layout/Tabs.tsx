@@ -5,6 +5,7 @@ interface TabData {
     title: string;
     isDark?: boolean;
     mobileOnly?: boolean;
+    devOnly?: boolean;
     content: () => JSX.Element;
 }
 export function Tabs({ tabs }: { tabs: TabData[] }) {
@@ -24,26 +25,32 @@ export function Tabs({ tabs }: { tabs: TabData[] }) {
     return (
         <>
             <div className="tabs">
-                {tabs.map(({ title }, index) => (
-                    <div
-                        key={title}
-                        className={
-                            "tab" +
-                            (index === active ? " active" : "") +
-                            (tabs[index].mobileOnly ? " mobile-only" : "")
-                        }
-                        onClick={() => setActive(index)}
-                    >
-                        <h2>{title}</h2>
-                    </div>
-                ))}
+                {tabs.map(({ title, devOnly }, index) => {
+                    if (
+                        devOnly === true &&
+                        import.meta.env.MODE !== "development"
+                    ) {
+                        return null;
+                    }
+                    return (
+                        <div
+                            key={title}
+                            className={
+                                "tab" +
+                                (index === active ? " active" : "") +
+                                (tabs[index].mobileOnly ? " mobile-only" : "")
+                            }
+                            onClick={() => setActive(index)}
+                        >
+                            <h2>{title}</h2>
+                        </div>
+                    );
+                })}
             </div>
 
             {tabContent.map((content, i) => (
                 <div
-                    className={`tab-wrapper ${
-                        tabs[i].isDark ? " dark" : ""
-                    } p-3 pt-2`}
+                    className={`tab-wrapper ${tabs[i].isDark ? " dark" : ""}`}
                     key={i}
                     style={{ display: i === active ? "" : "none" }}
                 >

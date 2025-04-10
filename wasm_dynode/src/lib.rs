@@ -1,4 +1,6 @@
+#![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
+#![feature(macro_metavar_expr)]
 
 mod model;
 pub use model::*;

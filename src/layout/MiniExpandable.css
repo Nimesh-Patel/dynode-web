@@ -1,0 +1,5 @@
+.mini-expandable-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}

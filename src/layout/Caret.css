@@ -1,0 +1,6 @@
+.caret {
+    display: inline-flex;
+    vertical-align: baseline;
+    align-items: center;
+    overflow: hidden;
+}

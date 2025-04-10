@@ -1,8 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import {
-    MitigationParams,
+    MitigationParamsExport as MitigationParams,
     Parameters,
     SEIRModelUnified,
-    SEIRModelOutput,
 } from "@wasm/wasm_dynode";
 import {
     createContext,
@@ -11,7 +12,9 @@ import {
     ReactNode,
     useRef,
     useEffect,
+    useMemo,
 } from "react";
+import { ModelRunTable, buildModelRunTable } from "./state/modelRuns";
 
 type ParamsContextType = {
     params: Parameters;
@@ -22,7 +25,9 @@ type ParamsContextType = {
     setDays: React.Dispatch<React.SetStateAction<number>>;
     model: SEIRModelUnified | null;
     runningState: RunningState;
-    modelResult: SEIRModelOutput[] | null;
+    modelRunTable: ModelRunTable | null;
+    isTurbo: boolean;
+    setIsTurbo: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ParamsContext = createContext<ParamsContextType | undefined>(undefined);
@@ -42,6 +47,7 @@ export const ParamsProvider = ({
     let [runningState, setRunningState] = useState<RunningState>(
         RunningState.Idle
     );
+    let [isTurbo, setIsTurbo] = useState(false);
 
     const updateParams = (newParams: Partial<Parameters>) =>
         setParams((current) => ({
@@ -60,16 +66,11 @@ export const ParamsProvider = ({
     const modelUpdateDebounceRef = useRef<NodeJS.Timeout | null>(null);
     // let [activePreset, activePreset] = useState(Preset | null>(null);
     let [days, setDays] = useState(200);
-    let [model, setModel] = useState<SEIRModelUnified | null>(null);
-    let [modelResult, setModelResult] = useState<SEIRModelOutput[] | null>(
-        null
-    );
+    let [modelRunTable, setModelRuns] = useState<ModelRunTable | null>(null);
 
     // Create a new model when the parameters change
-    useEffect(() => {
-        let model = new SEIRModelUnified(params);
-        setModel(model);
-        console.debug("Updating model with new params", params);
+    let model = useMemo(() => {
+        return new SEIRModelUnified(params);
     }, [params]);
 
     // Run the model when the days or model changes
@@ -79,11 +80,15 @@ export const ParamsProvider = ({
             clearTimeout(modelUpdateDebounceRef.current);
         }
         setRunningState(RunningState.Running);
-        modelUpdateDebounceRef.current = setTimeout(() => {
-            console.debug("Running model");
-            setModelResult(model.run(days).output);
-            setRunningState(RunningState.Idle);
-        }, 300);
+        modelUpdateDebounceRef.current = setTimeout(
+            () => {
+                console.debug("Running model");
+                let result = buildModelRunTable(model.run(days));
+                setModelRuns(result);
+                setRunningState(RunningState.Idle);
+            },
+            isTurbo ? 0 : 300
+        );
     }, [model, days]);
 
     return (
@@ -96,8 +101,10 @@ export const ParamsProvider = ({
                 days,
                 setDays,
                 model,
-                modelResult,
+                modelRunTable,
                 runningState,
+                isTurbo,
+                setIsTurbo,
             }}
         >
             {children}
@@ -105,7 +112,7 @@ export const ParamsProvider = ({
     );
 };
 
-const useParamsContext = () => {
+export const useParamsContext = () => {
     const context = useContext(ParamsContext);
     if (!context) {
         throw new Error("useParams must be used within a ParamsProvider");
@@ -122,12 +129,6 @@ export const useParams = () => {
 export const useDays = () => {
     const { days, setDays } = useParamsContext();
     return [days, setDays] as const;
-};
-
-export const useModelResult = () => {
-    const { runningState, modelResult } = useParamsContext();
-    const isRunning = runningState === RunningState.Running;
-    return { runningState, isRunning, modelResult };
 };
 
 export type MitigationType = keyof MitigationParams;

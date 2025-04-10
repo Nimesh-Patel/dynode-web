@@ -11,6 +11,7 @@
     white-space: nowrap;
     padding: 10px 12px;
     border-bottom: 1px solid var(--summary-table-border-color);
+    font-family: var(--main-font);
 }
 .summary-table th:first-child,
 .summary-table td:first-child {
@@ -18,11 +19,9 @@
     padding-right: 50px;
 }
 .summary-table td:first-child {
-    font-weight: bold;
+    font-weight: 500;
     text-align: left;
-}
-.summary-table td {
-    text-align: right;
+    font-family: var(--header-font);
 }
 .summary-table td.prevented {
     font-weight: bold;
@@ -42,4 +41,19 @@
 
 .summary-table th:last-child {
     width: 100%;
+}
+
+.underbar-wrapper {
+    position: relative;
+}
+.underbar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.underbar-bar {
+    height: 100%;
+    background-color: var(--black);
 }

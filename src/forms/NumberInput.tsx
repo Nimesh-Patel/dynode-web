@@ -34,9 +34,11 @@ interface NumberInputProps {
     range?: boolean;
     min?: number;
     max?: number;
+    showMinMaxLabels?: boolean;
     step?: number;
     value: number;
     onValue: (val: number) => void;
+    showSaveButton?: boolean;
 }
 
 export const NumberInput: React.FC<NumberInputProps> = ({
@@ -45,8 +47,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
     range,
     min,
     max,
+    showMinMaxLabels = true,
     step,
     numberType = "float",
+    showSaveButton = true,
     ...otherProps
 }) => {
     const [parsedInternal, setParsedInternal] = useState<number | null>(null);
@@ -96,6 +100,24 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         );
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            inputRef.current?.blur();
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            let newVal = addFloat(value, step || 1.0);
+            if (max === undefined || newVal <= max) {
+                onValue(newVal);
+            }
+        } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            let newVal = addFloat(value, -(step || 1.0));
+            if (min === undefined || newVal >= min) {
+                onValue(newVal);
+            }
+        }
+    };
+
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -113,6 +135,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                 onValue,
                 min,
                 max,
+                showMinMaxLabels,
                 step,
             };
         }
@@ -128,14 +151,17 @@ export const NumberInput: React.FC<NumberInputProps> = ({
                         ref={inputRef}
                         value={formattedVal}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                         onBlur={handleBlur}
                         {...otherProps}
                     />
-                    <div className="number-input-save">
-                        <button onClick={(e) => e.preventDefault()}>
-                            Save
-                        </button>
-                    </div>
+                    {showSaveButton && (
+                        <div className="number-input-save">
+                            <button onClick={(e) => e.preventDefault()}>
+                                Save
+                            </button>
+                        </div>
+                    )}
                     <span className="input-error">{errorMessage}</span>
                 </>
             )}
@@ -161,6 +187,7 @@ interface RangeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     min: number;
     max: number;
     step?: number;
+    showMinMaxLabels: boolean;
 }
 
 export const RangeInput: React.FC<RangeInputProps> = ({
@@ -170,6 +197,7 @@ export const RangeInput: React.FC<RangeInputProps> = ({
     max,
     step,
     onValue,
+    showMinMaxLabels,
     ...otherProps
 }) => {
     let value_pct = ((value - min) / (max - min)) * 100;
@@ -185,15 +213,19 @@ export const RangeInput: React.FC<RangeInputProps> = ({
     return (
         <div className="range-input">
             <div className="range-input-label">
-                <span
-                    style={{
-                        display:
-                            value_pct < LABEL_COLLISION_THRESHOLD ? "none" : "",
-                    }}
-                    className="min"
-                >
-                    {formatNumberShort(min)}
-                </span>
+                {showMinMaxLabels && (
+                    <span
+                        style={{
+                            display:
+                                value_pct < LABEL_COLLISION_THRESHOLD
+                                    ? "none"
+                                    : "",
+                        }}
+                        className="min"
+                    >
+                        {formatNumberShort(min)}
+                    </span>
+                )}
                 <div className="current-wrapper">
                     <span
                         style={{
@@ -205,17 +237,19 @@ export const RangeInput: React.FC<RangeInputProps> = ({
                         {value.toLocaleString("en-US")}
                     </span>
                 </div>
-                <span
-                    style={{
-                        display:
-                            value_pct > 100 - LABEL_COLLISION_THRESHOLD
-                                ? "none"
-                                : "",
-                    }}
-                    className="max"
-                >
-                    {formatNumberShort(max)}
-                </span>
+                {showMinMaxLabels && (
+                    <span
+                        style={{
+                            display:
+                                value_pct > 100 - LABEL_COLLISION_THRESHOLD
+                                    ? "none"
+                                    : "",
+                        }}
+                        className="max"
+                    >
+                        {formatNumberShort(max)}
+                    </span>
+                )}
             </div>
             <input
                 ref={ref}
@@ -231,16 +265,20 @@ export const RangeInput: React.FC<RangeInputProps> = ({
     );
 };
 
+function addFloat(a: number, b: number): number {
+    return Math.round((a + b) * 10000) / 10000;
+}
+
 // Tests
 if (import.meta.vitest) {
-    const { describe, it, expect } = import.meta.vitest;
+    const { describe, test, expect } = import.meta.vitest;
 
     describe("formatNumberToDisplay", () => {
-        it("formats integers with commas", () => {
+        test("formats integers with commas", () => {
             expect(formatNumberToDisplay(1000, "int")).toBe("1,000");
         });
 
-        it("formats floats with one decimal place", () => {
+        test("formats floats with one decimal place", () => {
             expect(formatNumberToDisplay(1_000_000, "float")).toBe(
                 "1,000,000.0"
             );
@@ -248,15 +286,15 @@ if (import.meta.vitest) {
     });
 
     describe("inputToNumber", () => {
-        it("converts comma-formatted integer string to number", () => {
+        test("converts comma-formatted integer string to number", () => {
             expect(inputToNumber("1,000,000", "int")).toBe(1_000_000);
         });
 
-        it("converts comma-formatted float string to number", () => {
+        test("converts comma-formatted float string to number", () => {
             expect(inputToNumber("1,000,000.1", "float")).toBe(1_000_000.1);
         });
 
-        it("returns an error for invalid string input", () => {
+        test("returns an error for invalid string input", () => {
             const result = inputToNumber("hello", "int");
             expect(result).toBeInstanceOf(Error);
             expect(result).toHaveProperty(
@@ -265,7 +303,7 @@ if (import.meta.vitest) {
             );
         });
 
-        it("returns an error for float input to int type", () => {
+        test("returns an error for float input to int type", () => {
             const result = inputToNumber("100.1", "int");
             expect(result).toBeInstanceOf(Error);
             expect(result).toHaveProperty(

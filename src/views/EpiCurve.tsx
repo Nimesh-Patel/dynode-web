@@ -1,92 +1,58 @@
-import { useMemo } from "react";
-import { useModelResult } from "../ModelState";
-import { CategorizedResult, SEIRPlot } from "../plots/SEIRPlot";
-// import { SelectInput } from "../forms/SelectInput";
-
 import "./EpiCurve.css";
-import { SEIRModelOutput } from "@wasm/wasm_dynode";
-import { PlotGroup } from "../plots/PlotGroup";
-import { SummaryTable } from "./SummaryTable";
-
-type GroupedResults = Array<Array<CategorizedResult>>;
-
-// Split a single SEIRModelOutput into multiple CategorizedResults by group
-function splitValuesVecByGroup(modelResult: SEIRModelOutput[]): GroupedResults {
-    let outputs: GroupedResults = [];
-    modelResult.forEach((r, categoryIndex) => {
-        r.values_vec.forEach((v) => {
-            v.value.forEach((value, groupIndex) => {
-                if (!outputs[groupIndex]) {
-                    outputs[groupIndex] = [];
-                }
-                if (!outputs[groupIndex][categoryIndex]) {
-                    outputs[groupIndex][categoryIndex] = {
-                        label: r.label,
-                        output_type: r.output_type,
-                        values: [],
-                    };
-                }
-                outputs[groupIndex][categoryIndex].values.push({
-                    time: v.time,
-                    value: value,
-                });
-            });
-        });
-    });
-    return outputs;
-}
-
-// Age group options
-// const ageGroupOptions = [
-//     { value: "0", label: "All" },
-//     // { value: "1", label: "0–4" },
-//     // { value: "2", label: "5–19" },
-//     // { value: "3", label: "20–64" },
-//     // { value: "4", label: "65+" },
-// ];
+import { MitigationPlot } from "../plots/MitigationPlot";
+import { useParams } from "../ModelState";
+import { useModelRunData } from "../state/modelRuns";
+import { match } from "../utils";
 
 export function EpiCurve() {
-    const { isRunning, modelResult } = useModelResult();
-    // const [ageGroups, setAgeGroups] = useState([{ value: "0", label: "All" }]);
+    let [params] = useParams();
+    let { mitigation_types } = useModelRunData();
 
-    const grouped: GroupedResults | null = useMemo(() => {
-        if (!modelResult) return null;
-
-        return splitValuesVecByGroup(modelResult);
-    }, [modelResult]);
-
+    let hasMitigations = mitigation_types?.includes("Mitigated");
     return (
         <>
-            <h3>Infection Incidence</h3>
-            <div className="mb-4" style={{ opacity: isRunning ? "0.5" : "" }}>
-                {modelResult && <SEIRPlot results={modelResult} />}
-            </div>
-
-            <h3 className="mb-1">By Age Group</h3>
-            {/* <div className="mb-1">
-                <SelectInput
-                    value={ageGroups}
-                    options={ageGroupOptions}
-                    isMulti={true}
-                    onChange={(selected) => {
-                        setAgeGroups(selected ?? []);
-                    }}
+            <section className="mb-3">
+                <h3 className="mb-1">
+                    {hasMitigations
+                        ? "Mitigated v.s. Unmitigated Scenario"
+                        : "Unmitigated Scenario"}
+                </h3>
+                <h4 className="mb-1">Overall Infection Incidence</h4>
+                <MitigationPlot
+                    yLabel="Incidence"
+                    aspectRatio={0.5}
+                    ticks={10}
+                    filter={(d) => d.output_type === "InfectionIncidence"}
+                    annotations={hasMitigations}
                 />
-            </div> */}
-
-            <div className="mb-4" style={{ opacity: isRunning ? "0.5" : "" }}>
-                <div className="row-2">
-                    {grouped && (
-                        <PlotGroup
-                            groups={grouped}
-                            yTicks={5}
-                            showLegend={false}
-                        />
-                    )}
-                </div>
-            </div>
-
-            <SummaryTable />
+                <MitigationPlot
+                    yLabel="Incidence"
+                    facetBy="output_type"
+                    filter={(d) => d.output_type !== "InfectionIncidence"}
+                    facetLabel={(outputType) =>
+                        match(outputType, [
+                            ["HospitalIncidence", () => "Hospitalizations"],
+                            ["DeathIncidence", () => "Deaths"],
+                            // ["InfectionIncidence", () => "Infections"],
+                            [
+                                "SymptomaticIncidence",
+                                () => "Symptomatic Infections",
+                            ],
+                        ])
+                    }
+                />
+            </section>
+            <section className="mb-3">
+                <h3 className="mb-1">Infection Incidence by Age Group</h3>
+                <MitigationPlot
+                    filter={(d) => d.output_type === "InfectionIncidence"}
+                    facetBy="age_group"
+                    facetLabel={(groupId) =>
+                        params.population_fraction_labels[groupId]
+                    }
+                    singleYAxis
+                />
+            </section>
         </>
     );
 }

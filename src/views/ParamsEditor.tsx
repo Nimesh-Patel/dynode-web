@@ -2,6 +2,7 @@ import { NumberInput } from "../forms/NumberInput";
 import { Mitigations } from "../mitigations/Mitigations";
 import { FormGroup } from "../forms/FormGroup";
 import { useDays, useParams } from "../ModelState";
+import { GroupEditor } from "./GroupEditor";
 
 // let ag = () => [
 //     { value: "0-19", label: "0-19" },
@@ -15,6 +16,7 @@ export function ParamsEditor() {
     let [days, setDays] = useDays();
 
     let [params, updateParams] = useParams();
+
     return (
         <div className="p-1">
             <FormGroup>
@@ -32,7 +34,9 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Population size</label>
                 <NumberInput
+                    min={0}
                     value={params.population}
+                    step={1_000_000}
                     numberType="int"
                     onValue={(population) => updateParams({ population })}
                 />
@@ -41,6 +45,8 @@ export function ParamsEditor() {
             <FormGroup>
                 <label>Initial infections</label>
                 <NumberInput
+                    min={0}
+                    step={100}
                     value={params.initial_infections}
                     onValue={(initial_infections) =>
                         updateParams({ initial_infections })
@@ -85,7 +91,66 @@ export function ParamsEditor() {
                     }
                 />
             </FormGroup>
+
             <Mitigations />
+
+            <FormGroup>
+                <GroupEditor
+                    label="Percent symptomatic"
+                    value={params.fraction_symptomatic}
+                    onValue={(newValue) =>
+                        updateParams({ fraction_symptomatic: newValue })
+                    }
+                    renderInput={(value, onValue) => (
+                        <NumberInput
+                            min={0.3}
+                            max={0.8}
+                            step={0.01}
+                            value={value}
+                            numberType="float"
+                            onValue={onValue}
+                        />
+                    )}
+                />
+            </FormGroup>
+            <FormGroup>
+                <GroupEditor
+                    label="Percent hospitalized"
+                    value={params.fraction_hospitalized}
+                    onValue={(newValue) =>
+                        updateParams({ fraction_hospitalized: newValue })
+                    }
+                    renderInput={(value, onValue) => (
+                        <NumberInput
+                            min={0.0}
+                            max={0.1}
+                            step={0.01}
+                            value={value}
+                            numberType="float"
+                            onValue={onValue}
+                        />
+                    )}
+                />
+            </FormGroup>
+            <FormGroup>
+                <GroupEditor
+                    label="Fatality rate"
+                    value={params.fraction_dead}
+                    onValue={(newValue) =>
+                        updateParams({ fraction_dead: newValue })
+                    }
+                    renderInput={(value, onValue) => (
+                        <NumberInput
+                            min={0.0}
+                            max={0.2}
+                            step={0.005}
+                            value={value}
+                            numberType="float"
+                            onValue={onValue}
+                        />
+                    )}
+                />
+            </FormGroup>
         </div>
     );
 }

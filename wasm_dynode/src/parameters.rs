@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-use crate::MitigationParams;
+use crate::{MitigationParams, MitigationParamsExport};
 
 #[derive(Debug, Clone)]
 pub struct Parameters<const N: usize> {
@@ -15,18 +15,32 @@ pub struct Parameters<const N: usize> {
     pub r0: f64,
     pub latent_period: f64,
     pub infectious_period: f64,
-    pub mitigations: MitigationParams,
+    pub fraction_symptomatic: SVector<f64, N>,
+    pub fraction_hospitalized: SVector<f64, N>,
+    pub hospitalization_delay: f64,
+    pub fraction_dead: SVector<f64, N>,
+    pub death_delay: f64,
+    pub mitigations: MitigationParams<N>,
+    // Detection parameters
+    // prob. of test given symptomatic infection
+    pub p_test_sympto: f64,
+    // test sensitivity
+    pub test_sensitivity: f64,
+    // prob. of forwarding a positive test
+    pub p_test_forward: f64,
 }
 
 impl<const N: usize> Parameters<N> {
     pub fn has_mitigations(&self) -> bool {
-        self.mitigations.iter().any(|m| m.get_enabled())
+        self.mitigations.antivirals.enabled
+            || self.mitigations.community.enabled
+            || self.mitigations.vaccine.enabled
     }
     pub fn without_mitigations(&self) -> Self {
         let mut params = self.clone();
-        for m in params.mitigations.iter_mut() {
-            m.set_enabled(false);
-        }
+        params.mitigations.antivirals.enabled = false;
+        params.mitigations.community.enabled = false;
+        params.mitigations.vaccine.enabled = false;
         params
     }
 }
@@ -43,7 +57,20 @@ impl Default for Parameters<2> {
             r0: 1.5,
             latent_period: 1.0,
             infectious_period: 2.5,
-            mitigations: MitigationParams::default(),
+            fraction_symptomatic: vector![0.5, 0.5],
+            fraction_hospitalized: vector![0.01, 0.1],
+            hospitalization_delay: 7.0,
+            fraction_dead: vector![0.0005, 0.005],
+            death_delay: 10.0,
+            mitigations: {
+                let mut default = MitigationParams::default();
+                default.community.effectiveness = matrix![0.5, -0.10;
+                                                               -0.10, 0.0];
+                default
+            },
+            p_test_sympto: 0.0,
+            test_sensitivity: 0.90,
+            p_test_forward: 0.90,
         }
     }
 }
@@ -53,14 +80,22 @@ impl Default for Parameters<2> {
 pub struct ParametersExport {
     pub n: usize,
     pub population: f64,
-    pub populaton_fraction_labels: Vec<String>,
+    pub population_fraction_labels: Vec<String>,
     pub population_fractions: Vec<f64>,
     pub contact_matrix: Vec<f64>,
     pub initial_infections: f64,
     pub r0: f64,
     pub latent_period: f64,
     pub infectious_period: f64,
-    pub mitigations: MitigationParams,
+    pub fraction_symptomatic: Vec<f64>,
+    pub fraction_hospitalized: Vec<f64>,
+    pub hospitalization_delay: f64,
+    pub fraction_dead: Vec<f64>,
+    pub death_delay: f64,
+    pub mitigations: MitigationParamsExport,
+    pub p_test_sympto: f64,
+    pub test_sensitivity: f64,
+    pub p_test_forward: f64,
 }
 
 impl<const N: usize> TryFrom<ParametersExport> for Parameters<N> {
@@ -78,14 +113,22 @@ impl<const N: usize> TryFrom<ParametersExport> for Parameters<N> {
             population: params.population,
             population_fractions: SVector::from_iterator(params.population_fractions.into_iter()),
             population_fraction_labels: SVector::from_iterator(
-                params.populaton_fraction_labels.into_iter(),
+                params.population_fraction_labels.into_iter(),
             ),
             contact_matrix: SMatrix::from_iterator(params.contact_matrix.into_iter()),
             initial_infections: params.initial_infections,
             r0: params.r0,
             latent_period: params.latent_period,
             infectious_period: params.infectious_period,
-            mitigations: params.mitigations,
+            fraction_symptomatic: SVector::from_iterator(params.fraction_symptomatic),
+            fraction_hospitalized: SVector::from_iterator(params.fraction_hospitalized),
+            hospitalization_delay: params.hospitalization_delay,
+            fraction_dead: SVector::from_iterator(params.fraction_dead),
+            death_delay: params.death_delay,
+            mitigations: MitigationParams::try_from(params.mitigations)?,
+            p_test_sympto: params.p_test_sympto,
+            test_sensitivity: params.test_sensitivity,
+            p_test_forward: params.p_test_forward,
         })
     }
 }
@@ -96,13 +139,21 @@ impl<const N: usize> From<Parameters<N>> for ParametersExport {
             n: N,
             population: params.population,
             population_fractions: params.population_fractions.iter().copied().collect(),
-            populaton_fraction_labels: params.population_fraction_labels.iter().cloned().collect(),
+            population_fraction_labels: params.population_fraction_labels.iter().cloned().collect(),
             contact_matrix: params.contact_matrix.iter().copied().collect(),
             initial_infections: params.initial_infections,
             r0: params.r0,
             latent_period: params.latent_period,
             infectious_period: params.infectious_period,
-            mitigations: params.mitigations,
+            fraction_symptomatic: params.fraction_symptomatic.iter().copied().collect(),
+            fraction_hospitalized: params.fraction_hospitalized.iter().copied().collect(),
+            hospitalization_delay: params.hospitalization_delay,
+            fraction_dead: params.fraction_dead.iter().copied().collect(),
+            death_delay: params.hospitalization_delay,
+            mitigations: params.mitigations.into(),
+            p_test_sympto: params.p_test_sympto,
+            test_sensitivity: params.test_sensitivity,
+            p_test_forward: params.p_test_forward,
         }
     }
 }

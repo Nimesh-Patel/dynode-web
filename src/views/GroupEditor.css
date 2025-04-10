@@ -1,0 +1,19 @@
+.group-editor-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.group-editor-label label {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+.group-editor-label-sync {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.secondary-label {
+    color: var(--light-grey);
+}
